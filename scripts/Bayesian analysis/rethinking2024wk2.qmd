@@ -1,0 +1,312 @@
+---
+title: "Statistical Rethinking 2024"
+subtitle: "Week 2 lecture notes"
+date: Jan 16 2024
+toc: true
+toc-depth: 4
+number-sections: false
+format:
+  html:
+    code-fold: false
+    page-layout: full
+editor: visual
+reference-location: margin
+---
+
+```{r global_options, include=F, warning=F, message=F, echo=F, error=F}
+library(here)
+library(knitr)
+source("../scripts/prep.r")
+```
+
+## Linear regression as an Owl
+
+```{r}
+data(Howell1)
+d <- Howell1 %>%
+  filter(age>17) %>%
+  select(1:2)
+
+rm(Howell1)
+
+head(d) %>%
+  flextable()
+```
+
+```{r}
+psych::describe(d)
+```
+
+The parameters we are interested in right now are a mean height of 154.6 with standard deviation 7.7
+
+```{r}
+ggplot(d, aes(height)) + 
+  geom_vline(xintercept=mean(d$height),
+             color="darkgoldenrod2",
+             linewidth=1) +
+  geom_density(color="blue",
+               fill="dodgerblue2",
+               alpha=.4) +
+  scale_x_continuous(limits=c(125,180),
+                     breaks=seq(125,175,10))
+```
+
+## Bayesian model of height
+
+Let's create the model space. Note that we have two parameters to estimate (mean and standard deviation), and those parameter values can interact with one another. So our model space comprises combinations of the two parameters.
+
+```{r}
+
+options(digits=4, scipen=8)
+
+mu.list <- seq( from=150, to=160 , length.out=100 )
+
+mu.list[c(1:5, 25:30, 55:60)]
+
+```
+
+Note that we take a range of possible parameters that are sensible based on what we already observed about our data. The range was `range(d$height)` with a mean of `mean(d$height)`. So we take candidate values around what we think the mean is.
+
+```{r}
+
+options(digits=3, scipen=8)
+
+sigma.list <- seq( from=7 , to=9 , length.out=100 )
+
+sigma.list[c(1:5, 25:30, 55:60)]
+
+```
+
+Same idea with the standard deviation of the data - we take candidate values ranging around what we already know is the actual value.
+
+```{r}
+
+post <- expand.grid( mu=mu.list , sigma=sigma.list )
+
+post %>%
+  head() %>%
+  flextable() %>%
+  colformat_double(digits=1)
+
+```
+
+We now have a model space of 10,000 combinations of height and standard deviation of heights
+
+For illustration purposes, first we will try out our model space on a single datum
+
+```{r}
+
+ht <- 152
+
+post <- post %>%
+  mutate(ll152 = dnorm(ht, mu, sigma, log=T))
+
+psych::describe(post)
+
+```
+
+```{r}
+head(post)
+```
+
+```{r}
+
+ggplot(post, aes(mu, ll152)) + 
+  geom_vline(xintercept=152, color="darkgoldenrod2", linewidth=1) +
+  stat_smooth() +
+  scale_x_continuous(#limits=c(140,160),
+                     breaks=140:160)
+
+```
+
+The log likelihood is highest (maximized at the height data point of 152. We already know this by construction.
+
+We can incorporate information about the likelihoods of a height of 152 across the entire model space by taking a sum.
+
+```{r}
+
+tll <- sum(post$ll152) 
+tll
+
+```
+
+For all combinations of candidate values of mu and sigma that we establish in the object *post*, the sum of the log likelihoods for the datum of height=152 is `sum(post$ll152)`.
+
+Again for illustration purposes, now let's try out a single combination of mu and sigma, across all of our observations of height.
+
+```{r}
+
+mu_ex <- 150
+sig_ex <- 7
+
+d <- d %>%
+  mutate(ll150_7=dnorm(height, 
+                       mu_ex, # 150 
+                       sig_ex, # 7
+                       log=T)) 
+
+d %>%
+  head() %>%
+  flextable()
+
+
+```
+
+Similar to the summary value we did above, we can incorporate information about the likelihood of a particular combination of mu (150) and sigma (7), across all data points.
+
+```{r}
+sum(d$ll150_7)
+```
+
+```{r}
+
+# textbook code to generate likelihood
+
+#post$LL <- sapply( 1:nrow(post) , function(i) sum(
+#  dnorm( d$height , post$mu[i] , post$sigma[i] , log=TRUE ) ) )
+
+```
+
+```{r}
+
+post <- post %>%
+  mutate(likelihood = sapply(1:nrow(post), function(i) 
+    dnorm(d$height, 
+          post$mu[i], 
+          post$sigma[i], 
+          log=T) %>%
+      sum() 
+  )) 
+
+```
+
+```{r}
+
+post %>%
+  head() %>%
+  flextable() %>%
+  colformat_double(j=1:2,
+                   digits=1)
+
+```
+
+### Incorporating priors
+
+```{r}
+mu_pri <- data.frame(mu_pri=rnorm(1e4, 178, 20))
+
+ggplot(mu_pri, aes(mu_pri)) + 
+  geom_vline(xintercept=mean(mu_pri$mu_pri),
+             color="darkgoldenrod2",
+             linewidth=1) +
+  geom_density(color="blue",
+               fill="dodgerblue2",
+               alpha=.4) +
+  scale_x_continuous(breaks=seq(100,250,25))
+
+```
+
+```{r}
+
+sig_pri <- data.frame(sig_pri=runif(1e4, 0, 50))
+
+ggplot(sig_pri, aes(sig_pri)) + 
+  geom_density(color="blue",
+               fill="dodgerblue2",
+               alpha=.4) +
+  scale_x_continuous(breaks=seq(0,50,5))
+
+```
+
+```{r}
+
+# textbook code to generate product of likelihood and prior
+
+#post$prod <- post$LL + dnorm( post$mu , 178 , 20 , TRUE ) +
+#  dunif( post$sigma , 0 , 50 , TRUE )
+
+```
+
+```{r}
+
+post <- post %>%
+  mutate(prior=dnorm(mu, 178, 20, T),
+         sigpri=dunif(sigma, 0,50,T),
+         product=likelihood+prior+sigpri)
+
+```
+
+```{r}
+
+# textbook code to convert log likelihoods back to probabilities
+# note these are relative posterior probabilities, but no longer strictly probabilities as they do not sum to one
+
+#post$prob <- exp( post$prod - max(post$prod) )
+
+```
+
+```{r}
+
+post <- post %>%
+  mutate(prob=exp(product-max(product)))
+
+```
+
+Draw from the probabilities to get a posterior distribution.
+
+```{r}
+
+# 4.19
+
+set.seed(5432)
+sample.rows <- sample( 1:nrow(post) , size=1e4 , replace=TRUE ,
+                       prob=post$prob )
+sample.mu <- post$mu[ sample.rows ]
+sample.sigma <- post$sigma[ sample.rows ]
+
+```
+
+```{r}
+
+out <- data.frame(row=sample.rows) %>%
+  arrange(row) %>%
+  mutate(serial=1:1e4,
+         mu=sample.mu,
+         sigma=sample.sigma) %>%
+  relocate(serial, .before=row)
+
+out %>%
+  head() %>%
+  flextable()
+
+```
+
+```{r}
+
+options(digits=4, scipen=8)
+
+psych::describe(d$height) %>%
+  flextable()
+
+```
+
+```{r}
+
+psych::describe(out$mu) %>%
+  flextable()
+
+```
+
+The posterior distribution recovers the mean from the data. In this case the prior was way off, but there was enough data to overwhelm the prior and not mess up our results.
+
+```{r}
+ggplot(out, aes(mu)) + 
+  geom_vline(xintercept=mean(out$mu),
+             color="darkgoldenrod2",
+             linewidth=1) +
+  geom_density(fill="dodgerblue2",
+               color="blue",
+               alpha=.4) 
+```
+
+## Bayes' Rule as a regression

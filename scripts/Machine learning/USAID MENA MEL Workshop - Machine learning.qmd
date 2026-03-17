@@ -1,0 +1,232 @@
+---
+title: "Machine Learning"
+subtitle: "USAID MENA Advanced MEL Workshop"
+#date: "Latest version: `r Sys.Date()`"
+format: 
+  revealjs:
+    #logo: "USAID logo.png"
+    slide-number: false
+    slide-level: 3
+    transition: slide
+    #transition-speed: fast
+    background-transition: fade
+    incremental: false
+    #footer: "USAID MENA Advanced MEL Workshop"
+    theme: [default, usaid notepad.scss]
+    title-slide-attributes: 
+      data-background-image: "Horizontal_RGB_294_White.png"
+      data-background-position: top left
+      data-background-size: 25%
+      data-background-color: "#002F6C"
+editor: visual
+chalkboard: true
+---
+
+```{r setup, include=FALSE, message=F, warning=F}
+
+knitr::opts_chunk$set(echo=F, message=F, warning=F, fig.height=10, fig.width=6)
+
+library(here)
+library(knitr)
+getwd()
+source("../../../Methods Corner/misc/prep.r")
+
+```
+
+### Session Objectives
+
+By the end of this session, you should be able to..
+
+-   Understand basic concepts of machine learning
+
+-   Recognize the distinction between supervised and unsupervised learning
+
+-   Recognize the most common machine learning algorithms and how they are applied in development settings
+
+### [Level Set]{style="color:white;"} {background-color="#002F6C"}
+
+How does USAID do machine learning?
+
+-   [Managing Machine Learning Projects in International Development](https://www.usaid.gov/sites/default/files/2022-05/Vital_Wave_USAID-AIML-FieldGuide_FINAL_VERSION_1.pdf)
+
+-   [Making AI Work for International Development](https://www.usaid.gov/sites/default/files/2022-05/AI-ML-in-Development.pdf)
+
+### What is Machine Learning?
+
+-   Machine learning is a collection of algorithms that learn from data
+
+-   Machine learning attempts to learn the data so well that it can tell you what to expect with new data you haven't seen yet
+
+-   Machine learning algorithms can be broadly classified into unsupervised or supervised
+
+### How Machine Learning is Different
+
+What are the defining characteristics of machine learning?
+
+-   Prediction vs. causation
+
+-   Bias vs. variance
+
+-   Over- vs. under-fitting
+
+### Prediction vs. Causation
+
+-   Descriptive or exploratory analysis helps us understand our data
+
+-   Causal inference helps us understand the relationships between variables of interest
+
+-   Machine learning tries to learn our data so well that it can predict future data!
+
+### Bias vs. Variance
+
+-   The causal inference tradition seeks to eliminate bias first, then looks to improve efficiency by reducing variance
+
+-   Machine learning doesn’t care about bias
+
+-   In fact, sometimes machine learning can actually use bias to reduce uncertainty
+
+### Underfitting vs. Overfitting
+
+-   Standard analysis will take the data as given, and seek to understand it
+
+-   More advanced analysis may try to *explain* the given data
+
+-   Machine learning algorithms are evaluated according to how well they work on data they haven’t seen yet
+
+    -   Run algorithms on training data, evaluate performance on test data
+
+### [Unsupervised and Supervised Learning]{style="color:white;"} {background-color="#002F6C"}
+
+### Unsupervised Learning
+
+-   We have a set of variables that we suspect or have reason to believe are related to each other in some way
+-   Is there any hidden structure in the data that standard analysis would not find?
+-   The task is to find patterns that we can then turn into new variables that capture the patterns
+
+### Algorithms for Unsupervised Learning
+
+-   Clustering based on similarity
+    -   K-means, Latent Class Analysis, Density-Based Spatial Clustering
+-   Dimension reduction
+    -   Principal Component Analysis, Factor Analysis, Item Response Theory, Expectation Maximization
+
+### Clusters in Data
+
+::::: columns
+::: {.column width="50%"}
+-   Clustering algorithms minimize variance between data points, or use a distance metric
+-   Clustering is difficult when there is overlap between clusters
+:::
+
+::: {.column width="50%"}
+```{r}
+include_graphics("overlapping and non-overlapping clusters.png")
+
+```
+:::
+:::::
+
+### Correlations in Data
+
+-   Principal components analysis (PCA) attempts to capture as much of the total variance as possible in a single or few variables
+
+-   Factor analysis (FA) attempts to capture common variance among a set of variables
+
+### Total and Common Variance
+
+```{r}
+include_graphics("Total and common variance.png")
+```
+
+### Total Variance of Household Assets
+
+```{r}
+
+assets <- read_excel("Asset factor weights.xlsx")
+
+assets %>%
+  slice(1:10) %>%
+  gt() %>%
+  opt_table_font(font="Gill Sans Mt",
+                 size=16) %>%
+  cols_align(align="center") 
+
+```
+
+### Common Variance of Media Profiles
+
+What media or other sources do you turn to for news and information?
+
+```{r}
+include_graphics("Media profile factor loadings.png")
+```
+
+### Supervised Learning
+
+-   Now we have data that we know is related to some target variable
+-   How well can we use the data to hit the target?
+-   The task is now prediction/classification
+
+### Using Features to Predict a Target
+
+Previously we just had features. Now we have features that predict a target.
+
+```{r fig.cap="Interested in that spiral thingy? See https://www.mathnasium.com/blog/golden-ratio-in-nature"}
+
+include_graphics("three distributions.png")
+```
+
+### Algorithms for Supervised Learning
+
+-   Conditional Inference Trees/Random Forests: Break data into branches for classification and regression tasks
+-   Gradient Descent: Minimizes error by iterating through partial derivatives
+-   Neural Networks: Identifies 'hidden layers' in complex data to conduct deep learning tasks
+
+### Supervised learning - Conditional Inference Tree
+
+Conditional inference trees crawl through your data, split everything into different pathways (branches), and retain the branches that capture the most variation
+
+-   Advantage: identifies interesting sub-groups to explore further
+-   Disadvantage: Overfits your data!
+
+------------------------------------------------------------------------
+
+```{r}
+include_graphics("Iraq decision tree.png")
+
+```
+
+### Supervised learning - Random Forest
+
+Random forests makes predictions using a large number of trees
+
+```{r fig.cap = "Heterogeneous treatment effects on household income"}
+include_graphics("Causal forest estimates 2.png")
+
+```
+
+### From Machine Learning to AGI
+
+-   We’ve mentioned how machine learning is about the use of algorithms to learn from data
+
+-   What happens if the algorithms learn from data, and then use that learning to improve themselves and run again?
+
+-   Artificial General Intelligence (AGI) refers to algorithms that seem to us like thinking and reasoning human intelligences
+
+### Learn from Your Data, Then Learn from What You Learn
+
+```{r}
+include_graphics("AI graphic.png")
+```
+
+### Welcoming Our New Machine Learning Overlords
+
+-   Currently, the closest we have to AGI are the Large Language Models that power ChatGPT and other chatbots
+
+-   "In the next couple of decades, we will be able to do things that would have seemed like magic to our grandparents."  
+[Sam Altman, 9-23-24]
+
+-   Stay tuned for next session on Large Language Models!
+
+Thank you!
+

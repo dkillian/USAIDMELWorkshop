@@ -1,0 +1,48 @@
+---
+title: "Data collection in conflict"
+subtitle: "USAID MENA Advanced MEL Workshop"
+format: 
+  revealjs:
+    #logo: "USAID logo.png"
+    slide-number: true
+    slide-level: 3
+    transition: slide
+    #transition-speed: fast
+    background-transition: fade
+    incremental: false
+    footer: "USAID MENA Advanced MEL Workshop"
+    theme: [default, usaid notepad2.scss]
+    title-slide-attributes: 
+      data-background-image: "USAID logo.png"
+      data-background-position: top left
+      data-background-size: 25%
+      data-background-color: "#002F6C"
+      data-background: "linear-gradient(to bottom, #FFFFFF, #002F6C)"
+editor: visual
+---
+
+```{r setup, include=FALSE, message=F, warning=F}
+
+knitr::opts_chunk$set(echo=F, message=F, warning=F, fig.height=10, fig.width=6)
+
+library(here)
+library(knitr)
+
+source("../../../Methods Corner/misc/prep.r")
+
+```
+
+### Benchmarks for success
+
+By the end of this session, participants will be able to:
+
+- Understand the conditions in which indirect measurement is appropriate
+
+- Understand different ways of applying indirect measurement methods
+
+- Understand the strengths and limitations of each method
+
+
+### [Level Set]{style="color:white;"} {background-color="#002F6C"}
+
+### Measuring is hard

@@ -1,0 +1,117 @@
+---
+title: "Sampling: Design and Analysis"
+subtitle: "Sharon Lohr, Third Edition (2022)"
+author: "Dan Killian notes"
+toc: true
+number-sections: false
+format: html
+#  docx:
+#    reference-doc: USAID-report-template-02.docx
+editor: visual
+---
+
+```{r global_options, include=F, warning=F, message=F, echo=F, error=F}
+getwd()
+# standard figure size and generate clean output
+knitr::opts_chunk$set(autodep=T, fig.height=4, fig.width=6, warning=FALSE, message=FALSE, cache=TRUE, error=T, echo=T)
+library(here)
+source("../../../../Methods Corner/misc/prep.R")
+library(survey)
+library(sampling)
+library(SDAResources)
+```
+
+## Simple Random Sampling
+
+```{r}
+data(agpop)
+N <- nrow(agpop)
+```
+
+### Create sampling weights
+
+```{r}
+n <- nrow(agsrs)
+
+agsrs <- agsrs %>%
+  mutate(wt=rep(3078/n,n),
+         lt200k=ifelse(acres92<2e5, 1,0))
+
+dsrs <- svydesign(id=~1,
+                  weights=~wt,
+                  fpc=rep(N, n),
+                  data=agsrs)
+
+dsrs
+
+```
+
+### Bootstrap sample
+
+```{r}
+
+data(agsrs)
+set.seed(244)
+B <- 1e3
+n <- length(agsrs$acres92)
+
+psych::describe(agsrs$acres92)
+mean(agsrs$acres92)
+
+samps <- matrix(sample(agsrs$acres92, size= B * n, replace=T), B, n)
+
+stamps <- sample(agsrs$acres92, size=B*n, replace=T)
+
+
+head(stamps)
+
+set.seed(54)
+
+ot <- replicate(1e3, sample(agsrs$acres92, size=30, replace=T) %>%
+  mean()) %>%
+  data.frame(y=.)
+
+head(ot)
+mean(ot$y)
+
+ggplot(ot, aes(y)) + 
+  geom_vline(xintercept=mean(agsrs$acres92),
+             color="grey60",
+             size=1, alpha=.6) +
+  geom_vline(xintercept=mean(ot$y),
+             color="darkgoldenrod2",
+             size=1,
+             alpha=.5) +
+  geom_density(fill="dodgerblue2",
+               color="blue",
+               alpha=.5) +
+  scale_x_continuous(limits=c(1e5,6e5),
+                     labels=comma,
+                     breaks=seq(1e5, 6e5, 1e5)) +
+  scale_y_continuous() +
+  theme(axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) +
+  labs(x="",
+       y="",
+       title="Bootstrapped means")
+```
+
+```{r}
+psych::describe(ot$y) %>%
+  print() %>%
+  gt()
+flextable()
+```
+
+```{r}
+psych::describe(agsrs$acres92) %>%
+  gt()
+```
+
+## Systematic Random Sampling
+
+## Stratified Random Sampling
+
+## Cluster Sampling
+
+## 

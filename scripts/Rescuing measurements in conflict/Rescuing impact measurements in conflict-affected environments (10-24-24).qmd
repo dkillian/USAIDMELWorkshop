@@ -1,0 +1,410 @@
+---
+title: "Rescuing impact measurements"
+subtitle: "Differential treatment timing and duration in d-i-d estimation"
+#date: "Latest version: `r Sys.Date()`"
+format: 
+  revealjs:
+    chalkboard: true
+    slide-number: false
+    slide-level: 3
+    transition: slide
+    #transition-speed: fast
+    background-transition: fade
+    code-fold: true
+    incremental: false
+    #footer: "USAID MENA Advanced MEL Workshop"
+    theme: [default, usaid notepad.scss]
+    title-slide-attributes: 
+      data-background-image: "Horizontal_RGB_294_White.png"
+      data-background-position: top left
+      data-background-size: 25%
+      data-background-color: "#002F6C"
+editor: visual
+---
+
+```{r setup, include=FALSE, message=F, warning=F}
+
+knitr::opts_chunk$set(autodep=T, echo=F, message=F, warning=F, cache=T, error=T, fig.height=3, fig.width=5)
+
+library(here)
+library(knitr)
+
+source("../../../Methods Corner/misc/prep.r")
+
+```
+
+```{r global_options, include=F, warning=F, message=F, echo=F, error=F}
+here()
+mistifull <- read_rds(here("scripts/Rescuing measurements in conflict/MISTI villages measured all waves.rds"))
+
+mistifull <- mistifull %>%
+  filter(first.treat!=1) %>%
+  mutate(time_treat=ifelse(first.treat>0, wave-first.treat, 999)) %>%
+  relocate(time_treat, .after=first.treat)
+
+```
+
+### Session Objectives
+
+-   Understand the basic setup of quasi-experimental difference-in-differences
+
+-   Understand how d-i-d generalizes to multiple time periods and groups, and how complications can arise 
+
+-   Recognize adjustments to handle additional complexity
+
+-   Appreciate that generating defensible quasi-experimental impact estimates is difficult
+
+### How Do We Do Difference-in-differences?
+
+-   Under randomized d-i-d, the pre-treatment measurement is used to improve precision
+
+-   Under quasi-experimental d-i-d, we depend on the pre-treatment trend to remove time-invariant sources of bias
+
+-   For this to work, we must demonstrate or convincingly argue for parallel pre-treatment trends
+
+-   If we justify parallel trends, we can use the break in trends after treatment to estimate the treatment effect
+
+### Quasi-experimental d-i-d
+
+$y_{it}=\beta_0+\delta_{0,t}Post_t+\beta_{1,i}Treat_i+\delta_{1,it}Post_t\times Treat_i+\epsilon_{it}$
+$y_{it}=10 + 2\times Post_t + 2\times Treat_i + 4\times{Post_t\times Treat_i} + \epsilon_{it}$
+
+```{r}
+include_graphics("diff-in-diff with values.png")
+```
+
+### The Estimating Equation
+
+$y_{it}=\beta_0+\delta_{0,t}Post_t+\beta_{1,i}Treat_i+\delta_{1,it}Post_t\times Treat_i+\epsilon_{it}$
+
+where..
+
+$\beta_0$ is the comparison group at baseline
+
+$\delta_0$ is the change in comparison group from baseline to endline
+
+$\beta_1$ is the baseline difference between the treatment and comparison
+
+$\delta_1$ is the treatment effect, the interaction of treatment and time
+
+### Plugging Values into the Equation
+
+$y_{it}=\beta_0+\delta_{0,t}Post_t+\beta_{1,i}Treat_i+\delta_{1,it}Post_t\times Treat_i+\epsilon_{it}$
+
+$y_{it}=10 + 2\times Post_t + 2\times Treat_i + 4\times{Post_t\times Treat_i} + \epsilon_{it}$
+
+| Group | Baseline | Endline | Difference |
+|:-----------------:|:---------------:|:---------------:|:-----------------:|
+| Comparison | 10 | 12 | 2 |
+|  | $\beta_0$ | $\beta_0+\delta_0$ | $\delta_0$ |
+| Treatment | 12 | 18 | 6 |
+|  | $\beta_0+\beta_1$ | $\beta_0+\delta_0+\beta_1+\delta_1$ | $\delta_0+\delta_1$ |
+| Difference | 2 | 6 | 4 |
+|  | $\beta_1$ | $\beta_1 + \delta_1$ | $\delta_1$ |
+
+### Generalizing d-i-d to Many Periods/Groups
+
+When we generalize to multiple time periods and/or groups, we have the two-way fixed effect (TWFE) estimator
+
+$y_{gt}=\alpha_g+\alpha_t+\beta^{DD}_{gt}+\epsilon_{gt}$
+
+where..
+
+$\alpha_g$ are group fixed effects
+
+$\alpha_t$ are time fixed effects
+
+$B^{DD}_{gt}$ indicates whether group *g* in period *t* is treated
+
+### But What is $\beta^{DD}_{gt}$ Actually Telling Us?
+
+-   For the canonical 2x2, we know exactly what we are estimating
+
+-   For *g* groups and *t* time periods, we are getting some average of multiple 2x2s
+
+-   But how does this work, exactly?
+
+### Two Treatment Groups, Early and Late
+
+Let's take a single step from two time periods to three, where treatment can be adopted at either t = 2 or t = 3
+
+```{r, echo=F, fig.height=3, fig.width=5}
+#include_graphics("../viz/Goodman Bacon/g-b fig 1 treatment timing.png")
+
+include_graphics("Baker three timings replication.png")
+```
+
+### Not a Problem
+
+```{r echo=F}
+include_graphics("Baker panel a replication.png")
+```
+
+### Not a Problem
+
+```{r, echo=F}
+include_graphics("Baker panel b replication.png")
+```
+
+### Not a Problem
+
+```{r, echo=F}
+include_graphics("Baker panel c replication.png")
+```
+
+### COULD BE PROBLEM!
+
+```{r, echo=F}
+include_graphics("Baker panel d replication.png")
+```
+
+### Where Does This Leave Us?
+
+-   TWFE treats some data that is under treatment status as comparison!
+-   Not an issue under constant treatment effect
+    -   Stable unit treatment value (SUTVA)
+    -   No variation in treatment effect for any reason
+
+### TWFE Fails
+
+But TWFE fails under the following conditions:
+
+-   Different treatment groups have different treatment effects
+-   Treatment effects are dynamic over post-treatment periods
+-   Heterogeneous treatment effects across sub-groups within a treated group
+
+### Definitely a Problem
+
+What is the solution?
+
+```{r, echo=F}
+include_graphics("dynamic treatment effects biases TWFE.png")
+```
+
+### New Estimators, Old Evaluation
+
+- Measuring Impact of Stabilization Initiatives (MISTI)
+
+- Can community-driven development activities build local government legitimacy in a conflict-affected environment?
+
+### MISTI Background
+
+-   Village panel survey in five waves, Sep 2012 - Nov 2014
+-   \~5,000 villages surveyed across 130 districts and 23 provinces
+-   \~ 30,000 household interviews per wave
+-   860 treated villages at any wave (17%)
+-   355 villages surveyed in all five waves
+-   85 villages treated (24%)
+
+### MISTI Treatment Areas
+
+```{r echo=F}
+include_graphics("MISTI map.jpg")
+```
+
+### MISTI Treatment Timings
+
+| Wave | Comparison<br>Villages | Treated<br>Villages | Cumulative<br>Treated |
+|------|------------------------|---------------------|-----------------------|
+| 1    | 355                    | 0                   | 0                     |
+| 2    | 341                    | 14                  | 14                    |
+| 3    | 322                    | 19                  | 33                    |
+| 4    | 302                    | 20                  | 53                    |
+| 5    | 270                    | 32                  | 85                    |
+
+### Before Estimation, Matching
+
+Doubly-robust estimation 
+
+- Match on all variables that predict treatment and outcome
+- Coursened Exact Matching
+
+```{r}
+include_graphics("MISTI matching.png")
+```
+### Single-wave Analysis
+
+Final reporting of MISTI relied on a series of single-wave estimations
+
+| Measure   | Wave 2-4 | Wave 2-5 | Wave 3-4 | Wave 4-5 | Wave 3-5 |
+|-----------|----------|----------|----------|----------|----------|
+| Stability | .031     | .043     | .003     | -.039    | -.002    |
+
+### MISTI Two Way Fixed Effects (TWFE)
+
+$y_{it}=\alpha_i+\alpha_t+\beta^{DD}_{it}+\epsilon_{it}$
+
+$y_{it}=village_i+wave_t+treated^{DD}_{it}+\epsilon_{it}$
+
+
+| Term      | Estimate | Standard<br>Error | t statistic | p value |
+|-----------|----------|-------------------|---------------|-----------|
+| Treatment | -.0389    | .0947             | -.411         | .681      |
+
+### Diagnostic: the Bacon Decomposition
+
+-   The Bacon decomposition will take a TWFE model and decompose it into the full array of 2x2 d-i-d cells used to construct the overall estimate
+-   The decomposition will also calculate the variance-weights used in regression to see which 2x2 cells are powering the overall estimate
+-   After diagnosing a problem, the researcher can correct for the bias by using the newer estimators
+
+```{r include=F}
+
+mistibacon <- bacon(stab_std ~ treat_event,
+                    data=mistifull,
+                    id_var="village",
+                    time_var="wave") 
+
+```
+
+### MISTI bacondecomp 2x2 Cells
+
+```{r echo=F}
+
+mistibacon %>%
+  gt() %>%
+  opt_table_font(font="Gill Sans Mt",
+                 size=16) %>%
+  cols_align(align="center") 
+```
+
+### Plot of 2x2 Cells
+
+```{r echo=F, fig.height=4, fig.width=6}
+
+#ot <- data.frame(mistibacon)
+
+ggplot(mistibacon) +
+  aes(x = weight, y = estimate, shape = factor(type), color=as.factor(type)) +
+  labs(x = "Weight", y = "Estimate", shape = "Type", color="Type") +
+  geom_point() + 
+  scale_x_continuous(limits=c(0,.3),
+                     breaks=seq(0,.3,.05)) +
+  scale_color_viridis_d() + 
+  faceted + 
+  theme(legend.title=element_blank())
+```
+
+### MISTI bacondecomp
+
+```{r}
+
+ot <- bacon(stab_std ~ treat_event,
+                    data=mistifull,
+                    id_var="village",
+                    time_var="wave") 
+
+```
+
+```{r}
+mistibacon_coef <- sum(mistibacon$estimate * mistibacon$weight)
+
+mistibacon_coef 
+
+```
+
+If the Bacon Decomposition reveals a problem, use the newer estimators
+
+### Callaway and Sant'Anna (2021)
+
+This estimation gives you multiple outcomes
+
+-   Estimates for each treated group at each treated period
+-   Dynamic treatment effects for each treated group
+-   Aggregate treatment effect for each treatment group
+-   Overall treatment effect across all groups and periods, after discarding biased 2x2 cells
+
+### Treatment Effects for Each Group-Wave
+
+```{r include=F}
+cal <- att_gt(yname="stab_std",
+             tname="wave",
+             idname="idname",
+             gname="first.treat",
+             xformla= ~ nsp + ln_dist,
+             data=mistifull)
+#summary(cal)
+cal 
+```
+
+```{r warning=F, echo=F, fig.height=5, fig.width=6}
+cal_out <- data.frame(att=cal$att,
+                     se = cal$se,
+                     group=rep(2:5,each=4),
+                     color=rep(viridis(4), each=4),
+                     wave=rep(2:5,4)) %>%
+  mutate(type=ifelse(group==2, "Wave 2 treated",
+                     ifelse(group==3, "Wave 3 treated",
+                            ifelse(group==4, "Wave 4 treated", "Wave 5 treated"))),
+         treat=c(1,1,1,1,0,1,1,1,0,0,1,1,0,0,0,1),
+         lower=att-1.96*se,
+         upper=att+1.96*se,
+         xintercept=rep(c(1.8, 2.8, 3.8, 4.8), each=4))
+
+ggplot(cal_out, aes(wave, att, color=as.factor(treat))) + 
+  geom_hline(yintercept=0, color="darkgoldenrod", size=1, alpha=.8) +
+  geom_point(size=3) + 
+  geom_errorbar(aes(ymin=lower, ymax=upper), width=0, size=1) +
+  geom_label(aes(label=round(att,2)),
+             show.legend=F) +
+  scale_color_manual(values=c("firebrick","darkblue"),
+                     labels=c("Untreated","Treated")) +
+  facet_wrap(~type, scales="free") +
+  faceted +
+  theme(legend.position="bottom",
+        legend.title=element_blank()) + 
+  labs(x="", 
+       y="",
+       title="Change in stability, by time treated",
+       caption="Callaway Sant'Anna did
+       Outcomes in standard deviation units") + 
+  scale_x_continuous(limits=c(1.8, 5.2),
+                     breaks=1:5) +
+  scale_y_continuous(limits=c(-1.4,3.95),
+                     breaks=seq(-1,4,1))
+```
+
+```{r include=F}
+cal_simple <- aggte(cal, type="simple")
+#cal_simple
+```
+
+### Aggregate Treatment Effects by Group
+
+```{r include=F}
+cal_grp <- aggte(cal, type="group")
+#cal_grp
+```
+
+```{r echo=F}
+
+include_graphics("Callaway aggregate group time stability (10-24-24).png")
+
+```
+### What Have We Learned About MISTI?
+
+-   Using the newer econometric estimators, we were able to show dynamic treatment effects across time
+-   These dynamic effects highlighted initial success of the 2010 surge
+-   Early success gradually declined until the legitimacy crisis of the 2014 election
+
+### What Have We Learned About Evaluation?
+
+-   In certain settings, two-way fixed effects estimation is biased in ways that we only recently came to realize
+-   We have to carefully think through the data generating process (logic modeling) for each individual setting
+-   As we get more granular data and ask deeper questions, econometric tools are starting to provide better insight into treatment dynamics
+
+### What Should We Do?
+
+-   For any two-way fixed effects setting, use the Bacon decomposition to diagnose any problems
+-   Use event study designs to examine dynamic treatment effects
+-   Re-examine old evaluations!!
+
+### Looking Ahead
+
+Stay tuned for sessions on:  
+
+- Logic modeling
+- Learning agendas
+- Mapping
+
+
+Thank you!

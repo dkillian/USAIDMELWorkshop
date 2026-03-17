@@ -1,0 +1,61 @@
+/**
+ * USAID theme for reveal.js.
+ *
+ * Copyright (C) 2024-singularity MSI Data Bunch
+ */
+
+/*-- scss:defaults --*/
+
+// $body-bg: #A7C6ED !default; // usaid light blue
+// $body-color: #6C6463 !default; // usaid dark grey
+// $link-color: #205493 !default; // usaid web blue
+
+// $body-bg: #CFCDC9 !default; // usaid light grey
+// $body-color: #0067B9 !default; // usaid medium blue
+// $link-color: #002F6C !default; // usaid blue
+
+$font-family-sans-serif: 'Gill Sans MT' !default; 
+// $presentation-heading-color: #BA0C2F !default; // usaid red
+// $presentation-heading-color: #002F6C !default; // usaid blue
+$presentation-heading-color: #205493 !default; // usaid web blue
+$body-bg: #CFCDC9 !default; // usaid light grey
+$body-color: #6C6463 !default; // usaid dark grey
+$border-color: #fff !default; 
+$border-width: 100px !default;
+
+.reveal .footer {
+	color: #212721 !important;
+	text-align: center;
+	// display: inline-block ;
+	 // width: 100px;
+	 // height: 50px;
+	 // padding: 5px;
+	 // border: 1px solid blue;
+	 // background-color: #A7C6ED; 
+   }
+
+
+/*-- scss:rules --*/
+
+// Fix links so they are not cut off
+.reveal a {
+	line-height: 1.3em;
+}
+
+.reveal .footer {
+	font-size: 0.5em !important;
+	text-align: center !important;
+  }
+
+  
+.reveal p {
+    line-height: .9; /* Adjust this value as needed */
+}
+
+.reveal p {
+    margin-bottom: 40px; /* Adjust this value as needed */
+}
+
+
+
+

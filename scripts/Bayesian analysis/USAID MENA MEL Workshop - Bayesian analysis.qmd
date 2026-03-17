@@ -1,0 +1,387 @@
+---
+title: "Bayesian Analysis"
+subtitle: "USAID MENA Advanced MEL Workshop"
+#date: "Latest version: `r Sys.Date()`"
+format: 
+  revealjs:
+    #logo: "USAID logo.png"
+    slide-number: false
+    slide-level: 3
+    transition: slide
+    #transition-speed: fast
+    background-transition: fade
+    incremental: false
+    #footer: "USAID MENA Advanced MEL Workshop"
+    theme: [default, usaid notepad2.scss]
+    title-slide-attributes: 
+      data-background-image: "Horizontal_RGB_294_White.png"
+      data-background-position: top left
+      data-background-size: 25%
+      data-background-color: "#002F6C"
+editor: visual
+chalkboard: true
+---
+
+```{r setup, include=FALSE, message=F, warning=F}
+
+knitr::opts_chunk$set(echo=F, message=F, warning=F, fig.height=10, fig.width=6)
+
+library(here)
+library(knitr)
+
+source("../../../Methods Corner/misc/prep.r")
+
+```
+
+### Session Objectives
+
+
+-   Understand how to derive Bayes' Rule from the laws of probability
+
+-   Understand how to interpret Bayes' Rule in the context of a data analysis
+
+-   Understand how thinking like a Bayesian follows the scientific method and should guide how we think about the world
+
+### Session Objectives
+
+*Bonus content:*
+
+-   Setting Bayesian priors as qualitative research
+
+-   Naive Bayes'
+
+-   Expectation Maximization
+
+### [Level Set]{style="color:white;"} {background-color="#002F6C"}
+
+[Deriving Bayes' Rule](https://oscarbonilla.com/2009/05/visualizing-bayes-theorem/)
+
+### Bayes' Rule
+
+Consider two overlapping events A and B occurring within a universe U.
+
+```{r}
+include_graphics("venn-last.png")
+```
+
+$P(A)=\frac{A}{U}$
+
+$P(AB)=\frac{AB}{U}$
+
+### How Much of A is in B?
+
+```{r}
+include_graphics("venn-last.png")
+```
+
+$P(A|B)=\frac{P(AB)}{P(B)}$
+
+$P(AB)=P(A\mid B)P(B)$
+
+### How Much of B is in A?
+
+```{r}
+include_graphics("venn-last.png")
+```
+
+$P(B\mid A)=\frac{P(AB)}{P(A)}$
+
+$P(AB)=P(B\mid A)P(A)$
+
+### Putting the Two Together
+
+We can put the two identities together and solve for $A\mid B$:
+
+$P(A\mid B)P(B)=P(B\mid A)P(A)$
+
+$P(A\mid B)=\frac{P(B\mid A)P(A)}{P(B)}$
+
+And that's it. That's Bayes' Rule.
+
+### Bayes' Rule as an Analytical Tool
+
+We just used the laws of probability to derive Bayes' Rule:
+
+$P(A\mid B)=\frac{P(B\mid A)P(A)}{P(B)}$
+
+Now let's use this in the context of a data analysis
+
+$P(model\mid data)=\frac{P(data\mid model)P(model)}{P(data)}$
+
+Can also think in terms of hypothesis and evidence
+
+$P(hypothesis\mid evidence)=\frac{P(evidence\mid hypothesis)P(hypothesis)}{P(evidence)}$
+
+### Using Bayes' Rule
+
+$$P(model\mid data)=\frac{P(data\mid model)P(model)}{P(data)}$$
+
+$P(model\mid data)$: probability of a hypothesis given data
+
+$P(data\mid model)$: the likelihood of our data for each hypothesis
+
+$P(model)$: the prior probability of the model, before data
+
+$P\left(data\right)$: a normalizing constant
+
+### Bayesian Inference
+
+-   40 subjects, half randomly assigned a treatment expected to reduce the probability of an event
+
+- By random assignment, we would expect the event to fall evenly across treatment and control groups^[What if the 40 subjects are not a random draw from a population?]
+
+-   What is the probability *p* that an observed event occurred within the treatment group?
+
+### Setting Up Our Hypotheses
+
+$H_0: p=50\%$ No treatment effect
+
+$H_1: p \lt 50\%$ Treatment effect
+
+-   20 events - 4 events in the treatment group and 16 events in the control group
+
+-   How likely are these four events to have occurred within the treatment group?
+
+### Frequentist Hypothesis Test
+
+$P\left(data\geq data_{observed}\mid H_0\right)$
+
+```{r}
+ot <- binom.test(4,20) %>%
+  tidy()
+
+ot %>%
+  gt() %>%
+  opt_table_font(font="Gill Sans Mt",
+                 size=16) %>%
+  cols_align(align="center") 
+
+```
+
+$\frac{4}{20} = 20\%$
+
+$p=.012$
+
+### Setting Up the Bayesian Engine
+
+1.  Set a range of plausible values (the model space)
+2.  Calculate the likelihood of the data for each plausible value
+3.  Set the prior probability of each plausible value
+4.  Multiply the likelihood by the prior (numerator)
+5.  Divide by the denominator to get the posterior probability
+
+### Results of the Bayesian Engine
+
+```{r}
+p <- seq(from=.1,
+         to=.9,
+         by=.1)
+
+likelihood <- dbinom(x=4,
+                     size=20,
+                     prob=p)
+
+prior <- c(rep(.06,4), .52, rep(.06,4))
+
+numerator <- likelihood*prior
+
+denominator <- sum(numerator)
+
+posterior <- numerator / denominator
+
+out <- data.frame(hypothesis=p, likelihood, prior, numerator, posterior) %>%
+  round(3)
+
+out %>%
+  gt() %>%
+  gt_highlight_rows(rows=2) %>%
+  fmt_percent(column=c(1,3),
+              decimals=0) %>%
+  fmt_percent(column=5,
+              decimals=1) %>%
+  opt_table_font(font="Gill Sans Mt",
+                 size=18) %>%
+  cols_align(align="center") 
+
+# flextable(out) %>%
+#   bg(i = ~posterior > .3,
+#      bg="yellow", part="body") %>%
+#   set_formatter(hypothesis=percent,
+#                 prior=percent,
+#                 posterior = percent) 
+
+```
+
+A treatment effect of 20 percent is most likely
+
+But notice that we get back an entire distribution, not just a point estimate
+
+### From Prior to Posterior
+
+```{r fig.height=4, fig.width=7}
+library(ggchicklet)
+
+ot <- out %>%
+  select(hypothesis, prior, posterior) %>%
+  pivot_longer(cols=2:3,
+               names_to="measure",
+               values_to="value")
+
+ggplot(ot, aes(x=hypothesis, y=value, group=measure, color=measure, fill=measure)) +
+  geom_chicklet(position=position_dodge(),
+           width=.05,
+           alpha=.8) +
+  scale_color_manual(values=c(usaid_red, usaid_blue)) +
+  scale_fill_manual(values=c(usaid_red, usaid_blue)) +
+  scale_x_continuous(breaks=seq(.1,.9,.1),
+                     labels=percent_format(accuracy=1)) + 
+  scale_y_continuous(limits=c(0,.55),
+                     breaks=seq(0,.55,.05),
+                     labels=percent_format(accuracy=1)) +
+  labs(x="Candidate model value",
+       y="Probability",
+       title="Probability of candidate model values<br>
+       <span style='color:#BA0C2F;'>Posterior distribution</span>
+       <span style='color:#002F6C;'>Prior distribution</span>") +
+  theme(axis.title.y=element_text(angle=0, vjust=.55),
+        plot.title=element_markdown(),
+        legend.position="none")
+```
+
+### Bayesian Analysis as Science
+
+-   Recall what we learned as kids about the scientific method:\
+    -   Observe a state of the world\
+    -   Develop a hypothesis about how the world works\
+    -   Test your hypothesis with new data\
+    -   Update your beliefs and repeat
+
+### Think Like a Bayesian
+
+-   Using Bayes' Rule to conduct inference follows the scientific method!
+
+-   Let's think like a Bayesian
+
+-   Stay tuned for Bayes' Rule used in machine learning
+
+### Bonus Content
+
+-   Setting Bayesian priors as qualitative research
+
+-   Naive Bayes Classifier
+
+-   Expectation Maximization (EM) algorithm
+
+### Bayesian Priors
+
+-   The prior probability $P(model)$ reflects our current state of understanding about our hypothesis
+
+-   Stakeholders have a prior probability of the hypothesis, even if they don't think of it in terms of a Bayesian analysis
+
+-   What if we used the elicitation of prior probability as a qualitative research method?
+
+### Uncertain About Hypothesis
+
+```{r}
+include_graphics("beta 3,7.png")
+```
+
+### More Confident About Hypothesis
+
+```{r}
+include_graphics("beta 70,30.png")
+```
+
+### Bayes Priors as Qualitative Inquiry
+
+```{r}
+include_graphics("prior elicitation survey screenshot.png")
+```
+
+### Prior Probability Elicitation
+
+```{r}
+include_graphics("aware WBG.png")
+
+```
+
+### Naive Bayes
+
+-   Consider a logic model where we can assign actual probabilities
+
+![](grade DAG.png){height=4in}
+
+```{r}
+#include_graphics("grade DAG.png")
+
+```
+
+### Putting the Naive in Naive Bayes
+
+-   Assume each variable is independent of the others, even if we know that is not true ("naive")
+
+-   Given the assumption of independence, all we have to do is multiply probabilities together to estimate an outcome
+
+$$posterior \propto prior \times likelihood$$
+
+-   Automagically, naive Bayes gives us helpful answers!
+
+### Expectation Maximization (EM)
+
+-   Expectation maximization is an algorithm that iteratively updates probabilities using Bayes' Rule
+
+-   EM is used to impute missing data, or detect latent variables
+
+-   Starting with a reasonable best-guess of parameter values, the model learns from the data and updates the probabilities
+
+-   Automagically, the model converges to the best parameter values
+
+### E to the M to the E
+
+Expectation step
+
+-   For our best-guess of parameter values and observed data, what is the posterior distribution?
+
+Maximization step
+
+-   Use the most likely values from the expectation step to make our next best-guess of parameter values
+
+Expectation step.. Maximization step..
+
+### EM Climbs the Hill of Likelihood
+
+::::: columns
+::: {.column width="50%"}
+```{r}
+include_graphics("em_flowchart.png")
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+include_graphics("optimization_transfer.png")
+```
+:::
+:::::
+
+https://yangxiaozhou.github.io/data/2020/10/20/EM-algorithm-explained.html
+
+### Recap of bonus content
+
+-   Bayesian analysis starts simple with Bayes' Rule
+
+-   Because Bayes' Rule is based on the laws of probability, we can build very complex algorithms on top of it
+
+-   It is important to *practically* understand Bayes' Rule, and use it in our every day thinking about the world
+
+-   It is important to *conceptually* understand how Bayes' Rule can be applied in more complex ways to help us learn
+
+### Looking forward
+
+Stay tuned for sessions on 
+
+- Machine Learning
+- Large Language Models
+- Artificial General Intelligence
+
+Thank you!

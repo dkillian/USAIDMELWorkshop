@@ -1,0 +1,214 @@
+---
+title: "Causal Modeling"
+subtitle: "USAID MENA Advanced MEL Workshop"
+#date: "Latest version: `r Sys.Date()`"
+format: 
+  revealjs:
+    #logo: "USAID logo.png"
+    slide-number: false
+    slide-level: 3
+    transition: slide
+    #transition-speed: fast
+    background-transition: fade
+    incremental: false
+#    footer: "USAID MENA Advanced MEL Workshop"
+    theme: [default, usaid notepad2.scss]
+    title-slide-attributes: 
+      data-background-image: "Horizontal_RGB_294_White.png"
+      data-background-position: top left
+      data-background-size: 25%
+      data-background-color: "#002F6C"
+editor: visual
+---
+
+```{r setup, include=FALSE, message=F, warning=F}
+
+knitr::opts_chunk$set(echo=F, message=F, warning=F, fig.height=10, fig.width=6)
+
+library(here)
+library(knitr)
+getwd()
+source("../../../Methods Corner/misc/prep.r")
+
+```
+
+### Session Objectives
+
+-   Understand USAID practice around causal modeling
+
+-   Introduce new analytical developments that can extend USAID practice of causal modeling and link it to impact evaluation and learning agendas
+
+-   Identify management opportunities to incorporate best practice and new trends into activity implementation
+
+### [Level Set]{style="color:white;"} {background-color="#002F6C"}
+
+How does USAID do causal modeling?
+
+-   [ADS 201](https://www.usaid.gov/sites/default/files/2024-05/201_051524_1.pdf)
+-   [How-To Note: Developing a Project Logic Model](https://usaidlearninglab.org/system/files/resource/files/project_logic_model_how_to_note_final_sep1.pdf)
+-   [Technical Note: The Logical Framework](https://pdf.usaid.gov/pdf_docs/pbaab555.pdf)
+-   [In Defense of Logic Models](https://blog.fracturedatlas.org/in-defense-of-logic-models-31b8fa387cfd)
+
+### Logic Model
+
+-   A graphic or visual depiction of a theory of change that illustrates the connection between what a strategy, project, or activity will do and what it hopes to achieve
+
+-   There are a wide range of logic models
+
+    -   Results Framework
+    -   LogFrame
+    -   Causal loop diagram
+
+### Results Framework
+
+-   A type of logic model representing the development hypothesis of a USAID mission's strategy
+-   Diagrams the causal links between the strategy's Goal, Development Objectives (DOs), and Intermediate Results (IRs)  
+- Explicates theory of change, aids strategic planning, and serves as a communications tool  
+
+### LogFrame
+
+-   Complements the CDCS Results Framework by carrying the development hypothesis through from the overall program/project to the supporting activities
+-   Replicates the causal linkages, but starting from a Development Objective and ending with activity inputs
+-   Defines exactly what resources are needed to achieve results
+
+### Causal Loop Diagram
+
+-   A logic model that emphasizes feedback loops and includes notation for polarity of relationshpis
+
+```{r fig.cap="Understanding Smallholder Access to Finance, USAID/Uganda Feed the Future Market System Monitoring Activity", fig.align="center", fig.height=4.5, fig.width=5}
+include_graphics("causal viz/causal loop1.png")
+
+```
+
+### [New Directions]{style="color:white;"} {background-color="#002F6C"}
+
+Directed Acyclic Graphs (DAGs)
+
+-   A logic model with probabilities attached
+
+-   Causal influence revealed through ancestor/descendant relationships
+
+-   Directed = one way only!
+
+-   Acyclic = no feedback loops! Arrows cannot backtrack
+
+### The Four Confounds
+
+```{r fig.align="center", fig.height=4.5, fig.width=5}
+include_graphics("causal viz/DAG confounds D.png")
+```
+McElreath, Richard. *Statistical Rethinking: A Bayesian Course with Examples in R and Stan*. 2nd ed. 
+
+### The Fork
+
+```{r fig.align="center", fig.height=2, fig.width=2.5}
+include_graphics("causal viz/DAG fork D crop.png")
+```
+
+-   X causes both treatment and outcome
+-   Must control for X (backdoor criterion)
+
+$D$ is NOT $\perp\kern-5pt\perp Y$
+
+$D\perp\kern-5pt\perp Y \mid X$
+
+### Solve for the Fork
+
+The fork is the most common problem researchers face
+
+- All adjustment or matching methods attempt to solve the fork
+  - Regression adjustment
+  - Propensity score matching
+  - Inverse probability weighting
+
+### The Pipe
+
+```{r fig.align="center", fig.height=2, fig.width=2.5}
+include_graphics("causal viz/DAG pipe D crop.png")
+```
+
+-   X is a post-treatment outcome  
+-   Knowledge, Skills, Attitude, Practices  
+-   DO NOT control for X !!\  
+
+$D\perp\kern-5pt\perp Y$\
+
+
+### The Collider
+
+```{r fig.align="center", fig.height=2, fig.width=2.5}
+include_graphics("causal viz/DAG collider D crop.png")
+```
+
+-   DO NOT control for X !!  
+
+$D\perp\kern-5pt\perp Y$  
+
+$D$ IS NOT $\perp\kern-5pt\perp Y \mid X$  
+
+### The Descendant
+
+```{r fig.align="center", fig.height=2, fig.width=2.5}
+include_graphics("causal viz/DAG descendant D crop.png")
+```
+
+-   Z is not a post-treatment outcome, but a downstream unmeasured confounder
+
+-   Control for proxy variable X\
+
+-   If X a strong enough proxy: 
+
+$D\perp\kern-5pt\perp Y\mid X$
+
+### Latent Variables
+
+- DAGs can include unmeasured or hidden (latent) variables
+
+- Allows for other advanced analytical methods  
+  - Structural equation modeling  
+  - Latent class analysis  
+  - Factor analysis
+
+### Evaluation Designs as DAGs
+
+- Randomized Controlled Trial (RCT)
+- Instrumental Variables estimation (IV)
+- Regression Discontinuity (RD)
+
+### Randomized Controlled Trial
+
+```{r}
+include_graphics("causal viz/DAG RCT.png")
+
+```
+
+### Instrumental Variables Estimation
+
+```{r}
+include_graphics("causal viz/DAG IV.png")
+```
+
+
+### Regression Discontinuity
+
+```{r}
+include_graphics("causal viz/DAG RD.png")
+```
+
+Cunningham, Scott. *Causal Inference: The Mixtape*. 
+
+### Recap
+
+- Logic modeling can be extended to methods such as causal loop diagrams or directed acyclic graphs
+
+- These methods enable the integration of assumptions and hypotheses with data
+
+- USAID must continue to push the boundary of causal modeling and link them to analytical methods
+
+### Looking forward
+
+- Stay tuned for sessions on learning agendas, mapping, and Bayesian analysis
+
+- We will attach probabilities to our causal models
+
+Thank you!

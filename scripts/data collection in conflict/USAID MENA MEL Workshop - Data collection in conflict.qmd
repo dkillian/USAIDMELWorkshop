@@ -1,0 +1,266 @@
+---
+title: "Data collection in conflict"
+subtitle: "USAID MENA Advanced MEL Workshop"
+format: 
+  revealjs:
+    #logo: "USAID logo.png"
+    slide-number: false
+    slide-level: 3
+    transition: slide
+    #transition-speed: fast
+    background-transition: fade
+    incremental: false
+    #footer: "USAID MENA Advanced MEL Workshop"
+    theme: [default, usaid notepad2.scss]
+    title-slide-attributes: 
+      data-background-image: "Horizontal_RGB_294_White.png"
+      data-background-position: top left
+      data-background-size: 25%
+      data-background-color: "#002F6C"
+      #data-background: "linear-gradient(to bottom, #FFFFFF, #002F6C)"
+editor: visual
+---
+
+```{r setup, include=FALSE, message=F, warning=F}
+
+knitr::opts_chunk$set(echo=F, message=F, warning=F, fig.height=10, fig.width=6)
+
+library(here)
+library(knitr)
+
+source("../../../Methods Corner/misc/prep.r")
+
+```
+
+### Benchmarks for Success
+
+By the end of this session, participants will be able to:
+
+- Understand the conditions in which indirect measurement is appropriate
+
+- Understand different ways of applying indirect measurement methods
+
+- Understand the strengths and limitations of each method
+
+- Understand more general methods of survey experimentation 
+
+
+### [Level Set]{style="color:white;"} {background-color="#002F6C"}
+
+[Survey Methods for Sensitive Topics](https://graemeblair.com/papers/sensitive.pdf)
+
+[Empirical Validation Study of Popular Survey Methodologies for Sensitive Questions](https://imai.fas.harvard.edu/research/files/validate.pdf)
+
+
+### Respondents Hide Their Feelings
+
+- Support for violent actors or actions
+- Having an unpopular/stigmatized opinion
+- Victimization
+- Health condition
+- Criminal or stigmatized behavior
+
+### Can We Measure Hidden Feelings?
+
+- Randomized response
+- List
+- Endorsements
+
+These tactics are part of a broader approach of survey experimentation
+
+### Randomized Response
+
+- Introduce a randomizing device (die, coin)
+- Respondent applies randomizing device in private, without enumerator observation
+- Respondent produces a set response or answers truthfully, based on result of randomizing device
+
+### Randomized Response Example
+
+"For this question, I want you to answer yes or no after the result of a coin flip. If the coin lands on Heads, please respond Yes. If the coin lands on Tails, please respond truthfully to the question. [TURN AWAY FROM RESPONDENT]"
+
+```{r}
+set.seed(332)
+n <- 1e3
+dot <- data.frame(flip = rbinom(n, 1, .5)) %>%
+  mutate(result=ifelse(flip==1, "Heads", "Tails"),
+         action=ifelse(result=="Heads", "Answer Yes", "Answer truthfully"),
+         result_heads=ifelse(result=="Heads", 1, # answer Yes if heads
+                         NA),
+         result_tails=rbinom(n, 1, .3),
+         observed=ifelse(result=="Heads", result_heads, result_tails))
+#head(dot) %>%
+#  gt()
+```
+
+```{r}
+tbl <- data.frame(Measure=c("Observed", "Truth"),
+                  Proportion=c("64%", "29%"))
+tbl_gt <- tbl %>%
+  gt()
+#tbl_gt
+```
+
+:::: {.columns}
+
+::: {.column width="60%"}
+```{r}
+head(dot) %>%
+  gt() %>%
+  opt_table_font(font="Gill Sans Mt",
+                 size=16) %>%
+  cols_align(align="center") 
+
+```
+
+:::
+
+::: {.column width="40%"}
+```{r}
+
+tbl %>%
+  gt() %>%
+  opt_table_font(font="Gill Sans Mt",
+                 size=16) %>%
+  cols_align(align="center") 
+```
+
+:::
+
+::::
+
+### Quick Review
+
+Recall how we estimate the mean of a sample: 
+
+For data points [6, 10], the unweighted mean is $\frac{6+10}{2}$ = 8
+
+This is equivalent to equal weights: $(6*.5) + (10*.5) = 3+5 = 8$
+
+For data points [6, 10] with weights [.75, .25], the mean is $(6*.75)+(10*.25) = 4.5+2.5=7$
+
+### So How Do We Recover Truth?
+
+$P(Observed) = P(Heads)*P(Truth) + P(Tails)*1$
+
+Solve for the unknown: 
+
+$P(Truth) = \frac{P(Observed) - P(Tails)}{P(Heads)}$
+
+$\frac{.64 - .5}{.5} = .28$      ...recall that our true value was 29%
+
+We recovered truth, to within a small bit of sampling error
+
+### List Experiments
+
+- Show a list to the respondent
+- Ask respondent to provide a count of the list items they agree with or support
+- Randomize the list ordering
+- Randomize the assignment of a treatment of an additional sensitive item 
+
+### Measuring Support for Foreign Forces
+
+"I’m going to read you a list with the names of different groups and individuals on it. After I read the entire list, I’d like you to tell me *how many* of these groups and individuals you broadly support, meaning that you generally agree with the goals and policies of the group or individual."
+
+```{r}
+# ot <- data.frame(Control=c("Karzai Government", "National Solidarity Program", "Local Farmers", ""),
+#                  Treatment=c("Karzai Government", "National Solidarity Program", "Local Farmers", "International Security Assistance Forces (ISAF)"))
+# 
+# ot %>% 
+#   gt() %>%
+#   opt_table_font(font="Gill Sans Mt",
+#                  size=16) %>%
+#   cols_align(align="center")
+
+
+```
+
+### Measuring Support for Foreign Forces
+
+| Control | Treatment |
+|---------|-----------|
+| Karzai Government | Karzai Government |
+| National Solidarity Program | National Solidarity Program |
+| Local Farmers | Local Farmers |
+|                | International Security Assistance Forces (ISAF) |
+
+: {tbl-colwidths="[50,50]"}
+
+### Analyzing List Experiments
+
+Illustrative data only! 
+
+```{r}
+include_graphics("list raw count mn.png")
+
+```
+
+
+### Endorsement of Extremist Actor
+
+Measuring support for Taliban in conflict zones
+
+| Condition | Statement |
+|-----------|-----------|
+| Control   | It has recently been proposed to allow Afghans to vote in direct elections when selecting leaders for district councils. How strongly would you support this policy?  |
+| Actor A   | It has recently been proposed by foreign forces... |
+| Actor B   | It has recently been proposed by Taliban... |
+
+: {tbl-colwidths="[15,85]"}
+
+### Influence of Actor on Religious Practice
+
+| Condition | Statement |
+|-----------|-----------|
+| Control   | Muslim women should have the right to decide whether to wear the veil [agree/disagree] |
+| Treatment | [Violent actor] believers that Muslim women must demonstrate modesty by wearing a veil. Others say that women should have the right to decide. Which opinion do you agree with? |
+
+: {tbl-colwidths="[10,90]"}
+
+### Support for Taliban
+
+Illustrative data only! 
+
+```{r}
+include_graphics("policy support toy.png")
+```
+
+### Survey Experimentation
+
+- Encouragement design
+  - Randomize the offer of treatment
+
+- Information treatment
+  - Randomize the provision of information
+
+### Information Treatment
+
+"In the last year, USAID has provided $X in assistance for the social development for the people of [Country]"
+
+```{r}
+include_graphics("USAID information treatments meta-analysis estimates (10-18-24).png")
+```
+
+### What Have We Learned 
+
+| Method  | Measure |
+|---|---|
+| Randomized response | Interaction with militants in Nigeria |
+| List or <br>Endorsements | - Support for violence/violent actors<br>- Extremist influence on religious practice |
+| Encouragement | Testing new financial products for microenterprises |
+| Information | Value of USAID branding |
+
+: {tbl-colwidths="[25,75]"}
+
+### Recap
+
+- This session has introduced the concept of indirect measurement
+
+- Indirect measurement is part of a broader approach of survey experimentation
+
+- Any new intervention or M&E activity should consider where these approaches may add value
+
+- Stay tuned for sessions on causal modeling and learning agendas
+
+### {.center}
+
+Thank you!

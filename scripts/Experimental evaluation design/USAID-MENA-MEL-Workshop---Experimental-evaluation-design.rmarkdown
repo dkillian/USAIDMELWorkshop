@@ -1,0 +1,309 @@
+---
+title: "Experimental Evaluation Design"
+subtitle: "USAID MENA Advanced MEL Workshop"
+#date: "Latest version: `r Sys.Date()`"
+format: 
+  revealjs:
+    #logo: "USAID logo.png"
+    slide-number: false
+    slide-level: 3
+    transition: slide
+    #transition-speed: fast
+    background-transition: fade
+    incremental: false
+    #footer: "USAID MENA Advanced MEL Workshop"
+    theme: [default, usaid notepad.scss]
+    title-slide-attributes: 
+      data-background-image: "Horizontal_RGB_294_White.png"
+      data-background-position: top left
+      data-background-size: 25%
+      data-background-color: "#002F6C"
+editor: visual
+chalkboard: true
+---
+
+```{r setup, include=FALSE, message=F, warning=F}
+
+knitr::opts_chunk$set(echo=F, message=F, warning=F, fig.height=10, fig.width=6)
+
+library(here)
+library(knitr)
+getwd()
+source("../../../Methods Corner/misc/prep.r")
+
+```
+
+
+
+### Session Objectives
+
+-   Understand selection bias as a fundamental difficulty in identifying a valid counterfactual, and randomization as the most effective means of identifying the counterfactual
+
+-   Recognize the difference-in-means and difference-in-differences designs
+
+-   Understand the key validity threats to experimental evaluations, and where those threats may be addressed in the management cycle
+
+### [Level Set]{style="color:white;"} {background-color="#002F6C"}
+
+### Measuring Social Benefit
+
+We want to know the causal effect of an activity on its beneficiaries
+
+-   Job training on earnings and employment
+
+-   Teacher qualifications on student outcomes
+
+-   Humanitarian assistance on food security
+
+### Identifying a Treatment Assignment
+
+-   We established indicators for treatment assignment $D_i$ and an outcome of interest $Y_i$
+
+-   We established the switching equation $Y_i=D_iY_i^1+(1-D_i)Y_i^0$ mapping a potential treatment assignment to a realized outcome
+
+-   We re-wrote the switching equation to $Y_i=Y_i^0+(Y_i^1-Y_i^0)D_i$ in order to highlight the individual treatment effect term $\delta_i=Y_i^1-Y_i^0$
+
+### The Treatment Assignment Mechanism
+
+-   We stressed a distinction between treatment *assignment* and the treatment assignment *mechanism*
+
+-   Why is this distinction so important?
+
+-   Because many activities we evaluate target specific sub-samples of a broader population
+
+    -   The poor / marginalized / conflict-affected
+
+-   We can't just compare these participants to a randomly selected member of the population!
+
+### Capturing the Assignment Mechanism
+
+-   We start with the individual treatment effect $\delta_i=Y_i^1-Y_i^0$
+
+-   We take the average of all individual treatment effects
+
+$E\bigr[\delta\bigr]=E\bigr[Y^1-Y^0\bigr]$
+
+-   We take the difference in averages, rather than the average of the differences
+
+$E\bigr[Y^1-Y^0\bigr]=E\bigr[Y^1\bigr]-E\bigr[Y^0\bigr]$
+
+### Averages of Effects
+
+|  Unit   | Y^0^ | Y^1^ | Y^1^-Y^0^ |
+|:-------:|:----:|:----:|:---------:|
+|    1    |  12  |  18  |     6     |
+|    2    |  15  |  13  |    -2     |
+|    3    |  9   |  22  |    13     |
+|    4    |  20  |  19  |    -1     |
+| Average |  14  |  18  |     4     |
+
+$E\bigr[\delta\bigr]=E\bigr[Y^1-Y^0\bigr]=E\bigr[6,-2,13,-1\bigr]=4$
+
+$E\bigr[\delta\bigr]=E\bigr[Y^1\bigr]-E\bigr[Y^0\bigr]=18-14=4$
+
+### Difference-in-means Estimator
+
+-   Finally, we apply the switching equation to know who is treated and who is not
+
+$E\bigr[\delta\bigr]=E\bigr[Y^1-Y^0\bigr]$
+
+$E\bigr[Y^1-Y^0\bigr]=E\bigr[Y^1\bigr]-E\bigr[Y^0\bigr]$
+
+$E\bigr[Y^1\bigr]-E\bigr[Y^0\bigr]=E\bigr[Y^1|D=1\bigr]-E\bigr[Y^0|D=0\bigr]$
+
+-   This is the *difference-in-means estimator*
+
+### Real World Data!
+
+|  Unit   | Y^0^ | Y^1^ | Y^1^-Y^0^ |
+|:-------:|:----:|:----:|:---------:|
+|    1    |  ?   |  18  |     ?     |
+|    2    |  15  |  ?   |     ?     |
+|    3    |  ?   |  22  |     ?     |
+|    4    |  20  |  ?   |     ?     |
+| Average | 17.5 |  20  |     ?     |
+
+$E\bigr[Y^1-Y^0\bigr]=E\bigr[Y^1\bigr]-E\bigr[Y^0\bigr]$
+
+$E\bigr[Y^1\bigr]-E\bigr[Y^0\bigr]=E\bigr[Y^1|D=1\bigr]-E\bigr[Y^0|D=0\bigr]$
+
+$=20-17.5=2.5$
+
+### Decomposing the Difference in Means
+
+-   What do we know about the treatment assignment mechanism for these groups?
+
+-   To find out, we decompose the *difference-in-means* estimator into the following:
+
+Average Treatment Effect on the Treated (ATT)\
+$$+$$
+Difference between treatment and control group,<br>before treatment (selection bias)
+
+### Decomposing the Difference in Means
+
+:::: {.columns}
+::: {.column width="10%"}
+:::
+::: {.column width="80%"}
+Average Treatment Effect on the Treated (ATT)
+$E\bigr[Y^1|D=1\bigr]-E\bigr[Y^0|D=0\bigr]$  
+$$+$$
+Selection bias  
+$E\bigr[Y^0|D=1\bigr]-E\bigr[Y^0|D=0\bigr]$ 
+:::
+::: {.column width="10%"}
+:::
+::::
+
+### Decomposing the Difference in Means
+
+-   Why did we just do this?
+
+-   To demonstrate that we need to know the treatment assignment *mechanism* in order to know how each of these terms are affected
+
+-   Under randomization, treatment assignment $D_i$ is independent of the potential outcomes $Y_i^0$ and $Y_i^1$
+
+-   This means that the selection bias term is zero - there are no differences between the treatment and control groups before treatment
+
+### Randomization Provides Balance
+
+- Are characteristics balanced across treatment and control?
+
+- Algebraically, does $E\bigr[Y^0|D=1\bigr]-E\bigr[Y^0|D=0\bigr]=0$?
+
+
+
+```{r}
+include_graphics("info treatment balance.png")
+```
+
+
+
+### From Difference-in-means to d-i-d
+
+-   The difference-in-means estimator is easy - all we have to do is compare the post-treatment outcomes
+
+-   We can do better with difference-in-differences (d-i-d)
+
+-   Under d-i-d, we include a pre-treatment measurement of the outcome in addition to a post-treatment measurement
+
+### Difference-in-differences
+
+-   Including a pre-treatment measure of the outcome improves precision
+
+
+
+```{r}
+include_graphics("dm vs dd.png")
+```
+
+
+
+### Difference-in-differences
+
+-   Difference in differences also helps detect heterogeneous treatment effects
+
+-   Using the d-i-d design, we would be able to discover insights such as whether the intervention is working for those already better prepared to benefit
+
+-   Enables stakeholders to determine whether they want the strongest outcomes, or prefer more modest outcomes for beneficiaries who need the intervention the most!
+
+### Threats to Validity in Experimental Designs
+
+-   Randomization is the preferred method for identifying the counterfactual
+
+-   But randomization is vulnerable to threats that could introduce selection bias
+
+-   The primary threats to validity of randomization are compliance and attrition
+
+-   Other threats to validity include spillovers and measurement error
+
+### Threats to Validity - Compliance
+
+Recall what happens when we apply the switching equation to potential outcomes:
+
+$E\bigr[Y^1\bigr]-E\bigr[Y^0\bigr]=E\bigr[Y^1|D=1\bigr]-E\bigr[Y^0|D=0\bigr]$
+
+-   Note that this equation assumes perfect compliance!
+
+-   What happens if our treatment assignment is not followed?
+
+### Issues with Compliance
+
+| Assignment             | Issue                                |
+|------------------------|--------------------------------------|
+| $E\bigr[Y^0|D=1\bigr]$ | Assigned treatment, but not treated  |
+| $E\bigr[Y^1|D=0\bigr]$ | Not assigned treatment, but treated! |
+
+-   Most common way to deal with compliance failure is to ignore it
+
+-   This is referred to as Intent to Treat (ITT) analysis
+
+-   ITT analysis is a conservative estimate of the treatment effect, but also more policy relevant
+
+### Threats to Validity - Attrition
+
+-   If we collect pre-treatment measures of the outcome, what happens if we lose track of some participants at endline?
+
+-   If attrition is unrelated to treatment or outcomes, then it adds noise but not bias
+
+-   If attrition is correlated to the assignment of treatment or the outcome, we have both noise and bias
+
+-   For example, the outcome is household income, and we lose track of households due to shocks to household income
+
+### A Note on Expectation and Unbiasedness
+
+-   What does it mean for a sample to be unbiased?
+-   Is the mean of any single random sample unbiased?
+-   NO - the MEAN OF SAMPLE MEANS is unbiased
+-   A single mean will have sampling error, but the mean of means is centered at the population mean
+-   This is why we say the sample mean is unbiased *in expectation*
+
+### Randomization in Expectation
+
+-   Same idea applies to randomizing the assignment of treatment
+-   Randomization will balance all observed and unobserved characteristics *in expectation*
+-   Any single randomization is not guaranteed to exactly balance the treatment and control groups
+-   We still adjust for remaining imbalances (doubly-robust estimation)
+
+### Doubly-robust estimation
+
+Successful randomization, but still imbalances to control for
+
+
+
+```{r}
+include_graphics("info treatment balance.png")
+```
+
+
+
+
+### Ethics of Randomization
+
+Randomizing the assignment of treatment has ethical implications
+
+| Issue | Mitigation |
+|------------------------------------|------------------------------------|
+| Randomization is unfair | Randomization is arguably the most equitable way to allocate limited resources |
+| Randomization withholds benefit | \- Randomization should assess pilot/untested interventions<br>- If randomizing a known benefit, offer treatment later |
+
+: {tbl-colwidths="\[25,75\]"}
+
+### Management Points
+
+-   Conduct logic modeling sessions to diagram the data generating process
+
+-   Think about ways the assignment of treatment might 'leak' via spillover or contamination
+
+-   Examine statistical tests of randomization, compliance, and spillover
+
+### What if We Can't Randomize?
+
+-   If we can't randomize the assignment of treatment, the next best alternative is to look for ways to approximate 'as-if' randomization
+
+-   Stay tuned for quasi-experimental evaluation design!
+
+::: center
+Thank you!
+:::
+

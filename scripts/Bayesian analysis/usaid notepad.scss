@@ -1,0 +1,48 @@
+
+/*-- scss:defaults --*/
+
+$font-family-sans-serif: 'Gill Sans MT' !default; 
+// $presentation-heading-color: #BA0C2F !default; // usaid red
+// $presentation-heading-color: #002F6C !default; // usaid blue
+$presentation-heading-color: #205493 !default; // usaid web blue
+$body-bg: #CFCDC9 !default; // usaid light grey
+$body-color: #6C6463 !default; // usaid dark grey
+$border-color: #fff !default; 
+$border-width: 100px !default;
+
+// Fix links so they are not cut off
+.reveal a {
+	line-height: 1.3em;
+}
+
+.reveal .footer {
+	font-size: 0.5em !important;
+	text-align: center !important;
+ }
+  
+.reveal p {
+    line-height: 1; /* Adjust this value as needed */
+}
+
+.reveal p {
+    margin-bottom: 40px; /* Adjust this value as needed */
+}
+
+.reveal h2 {
+	font-size: .95em;
+	}
+
+.reveal body {
+	font-size: .8em;
+}
+
+
+h2 {
+	font-size: .95em;
+	}
+
+body {
+	font-size: .8em;
+}
+
+
